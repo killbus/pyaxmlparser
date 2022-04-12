@@ -968,6 +968,21 @@ class APK:
                 # If value is still None, the attribute could not be found, thus is not present
                 log.warning("Failed to get the attribute '{}' on tag '{}' with namespace. "
                             "But found the same attribute without namespace!".format(attribute, tag.tag))
+
+        if value and value.startswith("@"):
+            res_parser = self.get_android_resources()
+            if not res_parser:
+                # TODO: What should be the correct return value here?
+                return value
+
+            res_id, package = res_parser.parse_id(value)
+            try:
+                value = res_parser.get_resolved_res_configs(
+                    res_id,
+                    ARSCResTableConfig.default_config())[0][1]
+            except Exception as e:
+                log.warning("Exception get value from tag: %s" % e)
+
         return value
 
     def find_tags(self, tag_name, **attribute_filter):
